@@ -6,6 +6,8 @@ import (
 	"github.com/w1png/paid-access-telegram-bot/errors"
 )
 
+var ConfigInstance Config
+
 type Config struct {
   TelegramToken string
   Language string
@@ -20,6 +22,15 @@ type Config struct {
   PostgresTestDB string
 
   MainAdmin string
+}
+
+func InitConfig() error {
+  err := ConfigInstance.GatherVariables()
+  if err != nil {
+    return err
+  }
+
+  return nil
 }
 
 func (c *Config) GatherVariables() error {

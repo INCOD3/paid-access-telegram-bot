@@ -11,27 +11,29 @@ import (
 )
 
 func main() {
-  config := &utils.Config{}
-  err := config.GatherVariables()
+  err := utils.InitConfig()
   if err != nil {
     log.Fatal(err)
   }
 
   states.InitStateMachine()
 
-  err = logger.InitLogger(config.LoggerType)
+  err = logger.InitLogger(utils.ConfigInstance.LoggerType)
   if err != nil {
     log.Fatal(err)
   }
 
-  err = storage.InitStorage(config.StorageType)
-
-  err = language.InitLanguage(config.Language)
+  err = storage.InitStorage(utils.ConfigInstance.StorageType, false)
   if err != nil {
     logger.CurrentLogger.Log(logger.Fatal, err.Error())
   }
 
-  bot, err := NewBot(config.TelegramToken, 60, false)
+  err = language.InitLanguage(utils.ConfigInstance.Language)
+  if err != nil {
+    logger.CurrentLogger.Log(logger.Fatal, err.Error())
+  }
+
+  bot, err := NewBot(utils.ConfigInstance.TelegramToken, 60, false)
   if err != nil {
     logger.CurrentLogger.Log(logger.Fatal, err.Error())
   }

@@ -50,3 +50,27 @@ type LoggerNotFoundError struct {
 func (e *LoggerNotFoundError) Error() string {
   return fmt.Sprintf("Logger %s is not found", e.Logger)
 }
+
+type StorageNotFoundError struct {
+  Storage string
+}
+
+func (e *StorageNotFoundError) Error() string {
+  return fmt.Sprintf("Storage not found: %s", e.Storage)
+}
+
+func NewStorageNotFoundError(storage string) *StorageNotFoundError {
+  return &StorageNotFoundError{Storage: storage}
+}
+
+type ObjectNotFoundError struct {
+  Object string
+}
+
+func (e *ObjectNotFoundError) Error() string {
+  return fmt.Sprintf("Object not found error: %s", e.Object)
+}
+
+func NewObjectNotFoundError(object string) *ObjectNotFoundError {
+  return &ObjectNotFoundError{Object: object}
+}
