@@ -20,7 +20,11 @@ const (
   AdminMenu_Channels_Add_Description
   AdminMenu_Channels_Add_Price
   AdminMenu_Channels_Add_IsIndefinite
+  AdminMenu_Channels_Add_IsIndefinite_True
+  AdminMenu_Channels_Add_IsIndefinite_False
+
   AdminMenu_Channels_Add_MaxMembers
+  AdminMenu_Channels_Add_MaxMembers_Unlimited
 
   AdminMenu_Channels_Edit
   AdminMenu_Channels_Edit_ChooseChannel

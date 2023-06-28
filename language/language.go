@@ -5,7 +5,7 @@ import (
 )
 
 type Language interface {
-  Get(key LanguageString) (string, error)
+  Get(key LanguageString) string
 }
 
 var CurrentLanguage Language

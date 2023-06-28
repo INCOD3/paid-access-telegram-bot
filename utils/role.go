@@ -10,20 +10,16 @@ const (
 )
 
 func (r Role) String() string {
-  var role string
-  var err error
+  var role language.LanguageString
   switch r {
   case Admin:
-    role, err = language.CurrentLanguage.Get(language.Role_Admin)
+    role = language.Role_Admin
   case User:
-    role, err = language.CurrentLanguage.Get(language.Role_User)
+    role = language.Role_User
   default:
-    role, err = language.CurrentLanguage.Get(language.Role_Unknown)
+    role = language.Role_Unknown
   }
 
-  if err != nil {
-    return err.Error()
-  }
-  return role
+  return language.CurrentLanguage.Get(role)
 }
 

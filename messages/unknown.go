@@ -6,10 +6,7 @@ import (
 )
 
 func UnknownMessage(msg *tg.Message, update tg.Update) (tg.MessageConfig, error) {
-  text, err := language.CurrentLanguage.Get(language.UnknownCommand)
-  if err != nil {
-    return tg.MessageConfig{}, err
-  }
+  text := language.CurrentLanguage.Get(language.UnknownCommand)
 
   replyMsg := tg.NewMessage(update.Message.Chat.ID, text)
   replyMsg.ReplyToMessageID = update.Message.MessageID

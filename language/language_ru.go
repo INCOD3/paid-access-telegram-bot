@@ -21,11 +21,12 @@ func NewRussian() *Russian {
   }
 }
 
-func (e *Russian) Get(key LanguageString) (string, error) {
+func (e *Russian) Get(key LanguageString) string {
   value, ok := e.Values[key]
   if !ok {
-    return "", errors.NewLanguageStringError(key.String())
+    panic(errors.NewLanguageStringError(key.String()))
   }
-  return value, nil
+  return value
 }
+
 

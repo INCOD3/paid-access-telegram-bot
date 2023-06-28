@@ -21,11 +21,11 @@ func NewEnglish() *English {
   }
 }
 
-func (e *English) Get(key LanguageString) (string, error) {
+func (e *English) Get(key LanguageString) string {
   value, ok := e.Values[key]
   if !ok {
-    return "", errors.NewLanguageStringError(key.String())
+    panic(errors.NewLanguageStringError(key.String()))
   }
-  return value, nil
+  return value
 }
 

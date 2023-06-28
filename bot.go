@@ -177,7 +177,7 @@ func (b *Bot) HandleUpdate(update tg.Update) {
   // if error occured during callback or command processing
   if err != nil {
     logger.CurrentLogger.Log(logger.Error, err.Error())
-    text, _ := language.CurrentLanguage.Get(language.UnknownError)
+    text := language.CurrentLanguage.Get(language.UnknownError)
     var chatId int64
     var messageId int
     if update.Message != nil {

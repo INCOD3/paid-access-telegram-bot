@@ -12,14 +12,10 @@ type RandomCallbackData struct {
 }
 
 func HelpCommand(msg *tg.Message, update tg.Update) (tg.MessageConfig, error) {
-  text, err := language.CurrentLanguage.Get(language.Help)
-  if err != nil {
-    return tg.MessageConfig{}, err
-  }
+  text := language.CurrentLanguage.Get(language.Help)
 
   replyMsg := tg.NewMessage(update.Message.Chat.ID, text)
   replyMsg.ReplyToMessageID = update.Message.MessageID
-
 
   callback, err := utils.MarshalCallback(utils.NewCallback(
     "help",
