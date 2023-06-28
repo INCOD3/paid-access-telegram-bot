@@ -8,6 +8,7 @@ import (
 
 	tg "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/w1png/paid-access-telegram-bot/callbacks"
+	admincallbacks "github.com/w1png/paid-access-telegram-bot/callbacks/admin"
 	"github.com/w1png/paid-access-telegram-bot/commands"
 	"github.com/w1png/paid-access-telegram-bot/errors"
 	"github.com/w1png/paid-access-telegram-bot/language"
@@ -101,6 +102,18 @@ func (b *Bot) HandleUpdate(update tg.Update) {
         msg, err = currentState.OnCallback(user.TelegramID, update.CallbackQuery.Message.Chat.ID, callback)
       } else {
         switch callback.Call {
+        case "adminmenu":
+          if !user.IsAdmin() {
+            msg, err = messages.UnknownMessage(update.Message, update)
+          }
+          msg, err = admincallbacks.AdminMenuCallback(update.Message, update, callback.Data)
+          shouldEdit = true
+        case "adminmenu_channels":
+          if !user.IsAdmin() {
+            msg, err = messages.UnknownMessage(update.Message, update)
+          }
+          msg, err = admincallbacks.AdminMenuChannelCallback(update.Message, update, callback.Data)
+          shouldEdit = true
         default:
           msg, err = callbacks.UnknownCallback(update.Message, update, callback.Data)
         }

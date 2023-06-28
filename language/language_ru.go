@@ -18,6 +18,8 @@ func NewRussian() *Russian {
       Role_User: "Пользователь",
       Role_Unknown: "Неизвестная роль",
 
+      Back: "Назад",
+
       AdminMenu: "Меню администратора",
       AdminMenu_Channels: "Каналы",
       AdminMenu_Channels_Add: "Добавить канал",

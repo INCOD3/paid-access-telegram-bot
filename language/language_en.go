@@ -18,6 +18,8 @@ func NewEnglish() *English {
       Role_User: "User",
       Role_Unknown: "Unknown role",
 
+      Back: "Back",
+
       AdminMenu: "Admin menu",
       AdminMenu_Channels: "Channels",
       AdminMenu_Channels_Add: "Add channel",

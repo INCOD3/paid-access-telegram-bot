@@ -11,6 +11,8 @@ const (
   Role_Admin
   Role_User
   Role_Unknown
+
+  Back
   
   AdminMenu
   AdminMenu_Channels
