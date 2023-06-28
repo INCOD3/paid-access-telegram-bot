@@ -7,7 +7,7 @@ import (
 )
 
 func AdminMenuMessage(msg *tg.Message, update tg.Update) (tg.MessageConfig, error) {
-  replyMsg := tg.NewMessage(update.Message.Chat.ID, language.CurrentLanguage.Get(language.AdminMenu))
+  message := tg.NewMessage(update.Message.Chat.ID, language.CurrentLanguage.Get(language.AdminMenu))
 
   callback, err := utils.MarshalCallback(
     utils.NewCallback(
@@ -19,7 +19,7 @@ func AdminMenuMessage(msg *tg.Message, update tg.Update) (tg.MessageConfig, erro
     return tg.MessageConfig{}, err
   }
 
-  replyMsg.ReplyMarkup = tg.NewInlineKeyboardMarkup(
+  message.ReplyMarkup = tg.NewInlineKeyboardMarkup(
     tg.NewInlineKeyboardRow(
       tg.NewInlineKeyboardButtonData(
         language.CurrentLanguage.Get(language.AdminMenu_Channels),
@@ -28,5 +28,5 @@ func AdminMenuMessage(msg *tg.Message, update tg.Update) (tg.MessageConfig, erro
     ),
   )
 
-  return replyMsg, nil
+  return message, nil
 }
