@@ -56,6 +56,10 @@ func (b *Bot) Stop() {
 }
 
 func (b *Bot) HandleUpdate(update tg.Update) {
+  if update.Message != nil && (update.Message.Chat.IsGroup() || update.Message.Chat.IsSuperGroup()) {
+    return
+  }
+
   startTime := time.Now()
 
   var msg tg.MessageConfig
@@ -63,13 +67,13 @@ func (b *Bot) HandleUpdate(update tg.Update) {
   var shouldEdit bool
   var editMessage tg.Message
 
+  // get user and create if not exists
   var userId int64
   if update.Message != nil {
     userId = update.Message.From.ID
   } else if update.CallbackQuery != nil {
     userId = update.CallbackQuery.From.ID
   }
-
   user, err := storage.CurrentStorage.GetUserByTelegramId(userId)
   if reflect.TypeOf(err) == reflect.TypeOf(&errors.ObjectNotFoundError{}) {
     user = models.NewUser(userId)
@@ -84,19 +88,47 @@ func (b *Bot) HandleUpdate(update tg.Update) {
   // callbacks
   if update.CallbackQuery != nil {
     callback, err := utils.NewCallbackFromCallbackData(update.CallbackQuery.Data)
-    if err == nil {
-      switch callback.Call {
-      case "help":
-        msg, err = userCallbacks.HelpCallback(update.CallbackQuery.Message, update, callback.Data)
-        logger.CurrentLogger.Log(logger.Info, fmt.Sprintf("err: %s | msg text: %s", err, msg.Text))
-        shouldEdit = true
-      default:
-        msg, err = callbacks.UnknownCallback(update.Message, update, callback.Data)
-        shouldEdit = true
-      }
+    currentState, ok := states.StateMachineInstance.States[states.NewStateUser(
+      user.TelegramID,
+      update.CallbackQuery.Message.Chat.ID,
+    )]
 
-      editMessage = *update.CallbackQuery.Message
+    if err == nil {
+      if ok {
+        msg, err = currentState.OnCallback(user.TelegramID, update.CallbackQuery.Message.Chat.ID, callback)
+      } else {
+        switch callback.Call {
+        case "help":
+          msg, err = userCallbacks.HelpCallback(update.CallbackQuery.Message, update, callback.Data)
+          logger.CurrentLogger.Log(logger.Info, fmt.Sprintf("err: %s | msg text: %s", err, msg.Text))
+          shouldEdit = true
+        default:
+          msg, err = callbacks.UnknownCallback(update.Message, update, callback.Data)
+          shouldEdit = true
+        }
+
+        editMessage = *update.CallbackQuery.Message
+      }
     }
+  }
+
+  // messages
+  if update.Message != nil && !update.Message.IsCommand() {
+    currentState, ok := states.StateMachineInstance.States[states.NewStateUser(
+      user.TelegramID,
+      update.Message.Chat.ID,
+    )]
+
+    if ok {
+      msg, err = currentState.OnMessage(user.TelegramID, update.Message.Chat.ID, update.Message.Text)
+    } else {
+      switch update.Message.Text {
+      default:
+        msg, err = messages.UnknownMessage(update.Message, update)
+      }
+    }
+
+    editMessage = *update.Message
   }
 
   // commands
@@ -115,22 +147,7 @@ func (b *Bot) HandleUpdate(update tg.Update) {
     editMessage = *update.Message
   }
 
-  if update.Message != nil && !update.Message.IsCommand() {
-    currentState, ok := states.StateMachineInstance.States[states.NewStateUser(
-      update.Message.Chat.ID,
-      update.Message.From.ID),
-    ]
-
-    if ok {
-      msg, err = currentState.OnMessage(update.Message.From.ID, update.Message.Chat.ID, update.Message.Text)
-    } else {
-      switch update.Message.Text {
-      default:
-        msg, err = messages.UnknownMessage(update.Message, update)
-      }
-    }
-  }
-
+  // if no error send or edit message
   if err == nil {
     if msg.ReplyToMessageID == -1 {
       return

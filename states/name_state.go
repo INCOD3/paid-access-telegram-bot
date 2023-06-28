@@ -1,7 +1,8 @@
 package states
 
 import (
-  tg "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	tg "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"github.com/w1png/paid-access-telegram-bot/utils"
 )
 
 type NameState struct {
@@ -26,6 +27,10 @@ func (s *NameState) OnMessage(id int64, chatID int64, message string) (tg.Messag
   msg := tg.NewMessage(chatID, "Nice to meet you, " + s.Name + "!")
   s.OnExit(id, chatID)
   return msg, nil
+}
+
+func (s *NameState) OnCallback(id int64, chatID int64, callback utils.Callback) (tg.MessageConfig, error) {
+  return tg.MessageConfig{}, nil
 }
 
 func (s NameState) String() string {
