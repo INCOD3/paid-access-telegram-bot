@@ -8,12 +8,12 @@ import (
 
 	tg "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/w1png/paid-access-telegram-bot/callbacks"
-	userCallbacks "github.com/w1png/paid-access-telegram-bot/callbacks/user"
 	"github.com/w1png/paid-access-telegram-bot/commands"
 	"github.com/w1png/paid-access-telegram-bot/errors"
 	"github.com/w1png/paid-access-telegram-bot/language"
 	"github.com/w1png/paid-access-telegram-bot/logger"
 	"github.com/w1png/paid-access-telegram-bot/messages"
+	adminmessages "github.com/w1png/paid-access-telegram-bot/messages/admin"
 	"github.com/w1png/paid-access-telegram-bot/models"
 	"github.com/w1png/paid-access-telegram-bot/states"
 	"github.com/w1png/paid-access-telegram-bot/storage"
@@ -101,10 +101,6 @@ func (b *Bot) HandleUpdate(update tg.Update) {
         msg, err = currentState.OnCallback(user.TelegramID, update.CallbackQuery.Message.Chat.ID, callback)
       } else {
         switch callback.Call {
-        case "help":
-          msg, err = userCallbacks.HelpCallback(update.CallbackQuery.Message, update, callback.Data)
-          logger.CurrentLogger.Log(logger.Info, fmt.Sprintf("err: %s | msg text: %s", err, msg.Text))
-          shouldEdit = true
         default:
           msg, err = callbacks.UnknownCallback(update.Message, update, callback.Data)
           shouldEdit = true
@@ -126,6 +122,11 @@ func (b *Bot) HandleUpdate(update tg.Update) {
       msg, err = currentState.OnMessage(user.TelegramID, update.Message.Chat.ID, update.Message.Text)
     } else {
       switch update.Message.Text {
+      case language.CurrentLanguage.Get(language.AdminMenu):
+        if !user.IsAdmin() {
+          msg, err = messages.UnknownMessage(update.Message, update)
+        }
+        msg, err = adminmessages.AdminMenuMessage(update.Message, update)
       default:
         msg, err = messages.UnknownMessage(update.Message, update)
       }
