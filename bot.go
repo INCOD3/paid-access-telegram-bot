@@ -77,6 +77,9 @@ func (b *Bot) HandleUpdate(update tg.Update) {
   user, err := storage.CurrentStorage.GetUserByTelegramId(userId)
   if reflect.TypeOf(err) == reflect.TypeOf(&errors.ObjectNotFoundError{}) {
     user = models.NewUser(userId)
+    if utils.ConfigInstance.MainAdminId == userId {
+      user.Role = utils.Admin
+    }
     err = storage.CurrentStorage.SaveUser(user)
     if err != nil {
       logger.CurrentLogger.Log(logger.Error, fmt.Sprintf("error while saving user: %s", err))

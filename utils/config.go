@@ -2,6 +2,7 @@ package utils
 
 import (
 	"os"
+	"strconv"
 
 	"github.com/w1png/paid-access-telegram-bot/errors"
 )
@@ -21,7 +22,7 @@ type Config struct {
   PostgresDB string
   PostgresTestDB string
 
-  MainAdmin string
+  MainAdminId int64
 }
 
 func InitConfig() error {
@@ -85,10 +86,15 @@ func (c *Config) GatherVariables() error {
     return errors.NewEnvironmentVariableError("POSTGRES_TEST_DB")
   }
 
-  c.MainAdmin, ok = os.LookupEnv("MAIN_ADMIN")
+  mainAdminIdRaw, ok := os.LookupEnv("MAIN_ADMIN")
   if !ok {
     return errors.NewEnvironmentVariableError("MAIN_ADMIN")
   }
+  mainAdminId, err := strconv.ParseInt(mainAdminIdRaw, 10, 64)
+  if err != nil {
+    return errors.NewEnvironmentVariableError("MAIN_ADMIN")
+  }
+  c.MainAdminId = mainAdminId
 
   return nil
 }
