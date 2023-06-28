@@ -7,15 +7,17 @@ import (
 
 type Storage interface {
   SaveChannel(channel *models.Channel) error
-  GetChannelById(id string) (*models.Channel, error)
+  GetChannelByName(name string) (*models.Channel, error)
+  DeleteChannelByName(name string) error
+  GetChannels() ([]*models.Channel, error)
 
   SaveSubscription(subscription *models.Subscription) error
   GetSubscriptionById(id string) (*models.Subscription, error)
-  GetSubscriptionsByChannelId(channelId string) ([]*models.Subscription, error)
-  GetSubscriptionsByUserId(userId string) ([]*models.Subscription, error)
+  GetSubscriptionsByChannelName(channelName string) ([]*models.Subscription, error)
+  GetSubscriptionsByTelegramId(telegramId int64) ([]*models.Subscription, error)
 
   SaveUser(user *models.User) error
-  GetUserById(id int64) (*models.User, error)
+  GetUserByTelegramId(telegramId int64) (*models.User, error)
 }
 
 var CurrentStorage Storage

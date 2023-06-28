@@ -3,16 +3,20 @@ package main
 import (
 	"fmt"
 	"log"
+	"reflect"
 	"time"
 
 	tg "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/w1png/paid-access-telegram-bot/callbacks"
 	userCallbacks "github.com/w1png/paid-access-telegram-bot/callbacks/user"
 	"github.com/w1png/paid-access-telegram-bot/commands"
+	"github.com/w1png/paid-access-telegram-bot/errors"
 	"github.com/w1png/paid-access-telegram-bot/language"
 	"github.com/w1png/paid-access-telegram-bot/logger"
 	"github.com/w1png/paid-access-telegram-bot/messages"
+	"github.com/w1png/paid-access-telegram-bot/models"
 	"github.com/w1png/paid-access-telegram-bot/states"
+	"github.com/w1png/paid-access-telegram-bot/storage"
 	"github.com/w1png/paid-access-telegram-bot/utils"
 )
 
@@ -59,6 +63,24 @@ func (b *Bot) HandleUpdate(update tg.Update) {
   var shouldEdit bool
   var editMessage tg.Message
 
+  var userId int64
+  if update.Message != nil {
+    userId = update.Message.From.ID
+  } else if update.CallbackQuery != nil {
+    userId = update.CallbackQuery.From.ID
+  }
+
+  user, err := storage.CurrentStorage.GetUserByTelegramId(userId)
+  if reflect.TypeOf(err) == reflect.TypeOf(&errors.ObjectNotFoundError{}) {
+    user = models.NewUser(userId)
+    err = storage.CurrentStorage.SaveUser(user)
+    if err != nil {
+      logger.CurrentLogger.Log(logger.Error, fmt.Sprintf("error while saving user: %s", err))
+    }
+  } else if err != nil {
+    logger.CurrentLogger.Log(logger.Error, fmt.Sprintf("error while getting user: %s", err))
+  }
+
   // callbacks
   if update.CallbackQuery != nil {
     callback, err := utils.NewCallbackFromCallbackData(update.CallbackQuery.Data)
@@ -81,7 +103,7 @@ func (b *Bot) HandleUpdate(update tg.Update) {
   if update.Message != nil && update.Message.IsCommand() {
     switch update.Message.Command() {
     case "start":
-      msg, err = commands.StartCommand(update.Message, update)
+      msg, err = commands.StartCommand(update.Message, update, user)
     case "help":
       msg, err = commands.HelpCommand(update.Message, update)
     case "test":

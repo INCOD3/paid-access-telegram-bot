@@ -2,10 +2,14 @@ package models
 
 import (
 	"time"
+
+	"gorm.io/gorm"
 )
 
 type Subscription struct {
-  ID uint `gorm:"primaryKey"`
+  gorm.Model
+
+  ID int `gorm:"primaryKey"`
 
   IsIndefinite bool
   ExpiresAt int64
@@ -13,4 +17,7 @@ type Subscription struct {
   
   UserId int64
   User User `gorm:"foreignKey:UserId"`
+
+  ChannelId string 
+  Channel Channel `gorm:"foreignKey:ChannelId"`
 }

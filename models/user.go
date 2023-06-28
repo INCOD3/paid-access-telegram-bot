@@ -12,7 +12,7 @@ type User struct {
   Role utils.Role
   Balance int64
 
-  Subscriptions []Subscription `gorm:"many2many:user_subscriptions;"`
+  Subscriptions []Subscription `gorm:"one2many:subscriptions;"`
 }
 
 func NewUser(telegramID int64) *User {

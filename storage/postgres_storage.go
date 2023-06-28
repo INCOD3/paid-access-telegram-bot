@@ -13,7 +13,7 @@ import (
 )
 
 type PostgresStorage struct {
-  db *gorm.DB
+  DB *gorm.DB
 }
 
 func NewPostgresStorage(is_test bool) (Storage, error) {
@@ -43,15 +43,15 @@ func NewPostgresStorage(is_test bool) (Storage, error) {
 }
 
 func (s *PostgresStorage) autoMigrate() error {
-  err := s.db.AutoMigrate(&models.Channel{})
+  err := s.DB.AutoMigrate(&models.Channel{})
   if err != nil {
     return err
   }
-  err = s.db.AutoMigrate(&models.Subscription{})
+  err = s.DB.AutoMigrate(&models.Subscription{})
   if err != nil {
     return err
   }
-  err = s.db.AutoMigrate(&models.User{})
+  err = s.DB.AutoMigrate(&models.User{})
   if err != nil {
     return err
   }
@@ -70,41 +70,62 @@ func (s *PostgresStorage) initDB(dsn string) error {
     return err
   }
   
-  s.db = db
+  s.DB = db
   return nil
 }
 
 func (s *PostgresStorage) SaveChannel(channel *models.Channel) error {
-  result := s.db.Create(channel)
+  result := s.DB.Save(channel)
   if result.Error != nil {
     return result.Error
   }
   return nil
 }
 
-func (s *PostgresStorage) GetChannelById(id string) (*models.Channel, error) {
+func (s *PostgresStorage) GetChannelByName(name string) (*models.Channel, error) {
   var channel models.Channel
-  result := s.db.Where("id = ?", id).First(&channel)
+  result := s.DB.Where("name = ?", name).First(&channel)
   if result.Error != nil {
     if result.Error == gorm.ErrRecordNotFound {
-      return &channel, errors.NewObjectNotFoundError(fmt.Sprintf("channel with id %s", id))
+      return &channel, errors.NewObjectNotFoundError(fmt.Sprintf("channel with name %s", name))
     }
     return nil, result.Error
   }
   return &channel, nil
 }
 
-func (s *PostgresStorage) SaveSubscription(subscription *models.Subscription) error {
-  result := s.db.Create(subscription)
+func (s *PostgresStorage) DeleteChannelByName(name string) (error) {
+  result := s.DB.Where("name = ?", name).Delete(&models.Channel{})
   if result.Error != nil {
     return result.Error
   }
   return nil
 }
 
+func (s *PostgresStorage) GetChannels() ([]*models.Channel, error) {
+  var channels []*models.Channel
+  result := s.DB.Find(&channels)
+  if result.Error != nil {
+    return nil, result.Error
+  }
+
+  return channels, nil
+}
+
+func (s *PostgresStorage) SaveSubscription(subscription *models.Subscription) error {
+  err := s.DB.Save(subscription).Error
+  if err != nil {
+    if err == gorm.ErrRecordNotFound {
+      return errors.NewObjectNotFoundError(fmt.Sprintf("subscription with id %d", subscription.ID))
+    }
+    return err
+  }
+  return nil
+}
+
 func (s *PostgresStorage) GetSubscriptionById(id string) (*models.Subscription, error) {
   var subscription models.Subscription
-  result := s.db.Where("id = ?", id).First(&subscription)
+  result := s.DB.Where("id = ?", id).First(&subscription)
   if result.Error != nil {
     if result.Error == gorm.ErrRecordNotFound {
       return &subscription, errors.NewObjectNotFoundError(fmt.Sprintf("subscription with id %s", id))
@@ -114,12 +135,12 @@ func (s *PostgresStorage) GetSubscriptionById(id string) (*models.Subscription, 
   return &subscription, nil
 }
 
-func (s *PostgresStorage) GetSubscriptionsByChannelId(channelId string) ([]*models.Subscription, error) {
+func (s *PostgresStorage) GetSubscriptionsByChannelName(channelName string) ([]*models.Subscription, error) {
   var subscriptions []*models.Subscription
-  result := s.db.Where("channel_id = ?", channelId).Find(&subscriptions)
+  result := s.DB.Where("channel_id = ?", channelName).Find(&subscriptions)
   if result.Error != nil {
     if result.Error == gorm.ErrRecordNotFound {
-      return subscriptions, errors.NewObjectNotFoundError(fmt.Sprintf("subscriptions with channel id %s", channelId))
+      return subscriptions, errors.NewObjectNotFoundError(fmt.Sprintf("subscriptions with channel id %s", channelName))
     }
     return nil, result.Error
   }
@@ -127,7 +148,7 @@ func (s *PostgresStorage) GetSubscriptionsByChannelId(channelId string) ([]*mode
 }
 
 func (s *PostgresStorage) SaveUser(user *models.User) error {
-  result := s.db.Save(user)
+  result := s.DB.Save(user)
   if result.Error != nil {
     return result.Error
   }
@@ -135,24 +156,24 @@ func (s *PostgresStorage) SaveUser(user *models.User) error {
   return nil
 }
 
-func (s *PostgresStorage) GetUserById(id int64) (*models.User, error) {
+func (s *PostgresStorage) GetUserByTelegramId(telegramId int64) (*models.User, error) {
   var user models.User
-  result := s.db.Where("id = ?", id).First(&user)
+  result := s.DB.Where("telegram_id = ?", telegramId).First(&user)
   if result.Error != nil {
     if result.Error == gorm.ErrRecordNotFound {
-      return &user, errors.NewObjectNotFoundError(fmt.Sprintf("user with id %s", strconv.FormatInt(id, 10)))
+      return &user, errors.NewObjectNotFoundError(fmt.Sprintf("user with id %s", strconv.FormatInt(telegramId, 10)))
     }
     return nil, result.Error
   }
   return &user, nil
 }
 
-func (s *PostgresStorage) GetSubscriptionsByUserId(userId string) ([]*models.Subscription, error) {
+func (s *PostgresStorage) GetSubscriptionsByTelegramId(telegramId int64) ([]*models.Subscription, error) {
   var subscriptions []*models.Subscription
-  result := s.db.Where("user_id = ?", userId).Find(&subscriptions)
+  result := s.DB.Where("user_id = ?", telegramId).Find(&subscriptions)
   if result.Error != nil {
     if result.Error == gorm.ErrRecordNotFound {
-      return subscriptions, errors.NewObjectNotFoundError(fmt.Sprintf("subscriptions for user with id %s", userId))
+      return subscriptions, errors.NewObjectNotFoundError(fmt.Sprintf("subscriptions for user with id %s", strconv.FormatInt(telegramId, 10)))
     }
     return nil, result.Error
   }
