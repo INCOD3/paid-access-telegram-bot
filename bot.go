@@ -103,7 +103,6 @@ func (b *Bot) HandleUpdate(update tg.Update) {
         switch callback.Call {
         default:
           msg, err = callbacks.UnknownCallback(update.Message, update, callback.Data)
-          shouldEdit = true
         }
 
         editMessage = *update.CallbackQuery.Message
