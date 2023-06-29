@@ -20,4 +20,6 @@ type Subscription struct {
 
   ChannelId string 
   Channel Channel `gorm:"foreignKey:ChannelId"`
+
+  IsExpired bool
 }
